@@ -1,0 +1,106 @@
+unit_stats:
+  archer:
+    hp: 350
+    attack: 8
+    defense: 3
+    speed: 0.35
+    range: 7
+    melee: false
+    base_vision: 9
+    attack_interval: 3000
+  axeman:
+    hp: 450
+    attack: 10
+    defense: 5
+    speed: 0.30
+    range: 1
+    melee: true
+    base_vision: 6
+    attack_interval: 2200
+  knight:
+    hp: 700
+    attack: 13
+    defense: 10
+    speed: 0.25
+    range: 1
+    melee: true
+    base_vision: 6
+    attack_interval: 2800
+  horseman:
+    hp: 500
+    attack: 11
+    defense: 6
+    speed: 0.50
+    range: 1
+    melee: true
+    base_vision: 8
+    attack_interval: 1800
+  spearman:
+    hp: 420
+    attack: 9
+    defense: 5
+    speed: 0.28
+    range: 2
+    melee: true
+    base_vision: 6
+    attack_interval: 2000
+  swordsman:
+    hp: 480
+    attack: 11
+    defense: 7
+    speed: 0.30
+    range: 1
+    melee: true
+    base_vision: 6
+    attack_interval: 2000
+  shieldbearer:
+    hp: 800
+    attack: 6
+    defense: 16
+    speed: 0.22
+    range: 1
+    melee: true
+    base_vision: 5
+    attack_interval: 3000
+  eliteguard:
+    hp: 650
+    attack: 14
+    defense: 12
+    speed: 0.28
+    range: 1
+    melee: true
+    base_vision: 7
+    attack_interval: 2500
+
+vision_biome: 
+  grassland: 1.0
+  shore: 0.95
+  oak_forest: 0.45
+  darkpine_forest: 0.35
+  highland: 0.80
+  mountain: 0.60
+  rocky: 0.65
+  lake: 0.90
+
+needs:
+  hunger_decay: 0.00008
+  thirst_decay: 0.00012
+  energy_drain: 0.0008
+  energy_regen: 0.006
+  hunger_crit: 1.5
+  thirst_crit: 1.5
+  starvation_dmg: 0.008
+  dehydrate_dmg: 0.012
+
+durations:
+  drink: 3000        # ms standing still at water
+  adrenaline: 12000  # ms
+
+inventory:
+  slots: 6
+
+territory:
+  radius: 18
+
+agent:
+  size: 7
