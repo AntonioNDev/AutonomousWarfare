@@ -4,14 +4,44 @@ AutonomousWarfare is a Python/Pygame autonomous-agent simulation set in a proced
 
 ## How it works
 
-The map is generated as a tile-based environment using Perlin noise for two independent values:
+The world is divided into square tiles. Each tile receives two independent Perlin-noise values: elevation and moisture.
 
-- **Elevation** determines water, shores, grasslands, highlands, and mountains.
-- **Moisture** determines forest and grassland biomes.
+For a tile at position `(x, y)`, the project samples normalized noise values in the range `[0, 1]`:
 
-Additional processing assigns water depth, removes small lakes, places mountains, and adds obstacles such as trees and rocks.
+```text
+Elevation(x, y) = (Perlin(x · sₑ + oₑₓ, y · sₑ + oₑᵧ) + 1) / 2
+Moisture(x, y)  = (Perlin(x · sₘ + oₘₓ, y · sₘ + oₘᵧ) + 1) / 2
+```
 
-Agents navigate the world using the **A\*** pathfinding algorithm. Each agent evaluates its surroundings and chooses actions such as exploring, fleeing, attacking, drinking, eating, resting, or trading. Unit behavior and statistics are configured in `game.yaml`.
+Here, `sₑ` and `sₘ` control the scale of the terrain patterns, while the offsets `oₑ` and `oₘ` use different random seeds so that moisture patterns do not simply copy elevation patterns.
+
+The normalized values are classified using thresholds:
+
+```text
+Elevation < 0.45              → water
+0.45 ≤ Elevation < 0.48       → shore
+Elevation > 0.61              → highland / mountain candidate
+
+Moisture > 0.60               → oak forest
+Moisture < 0.55               → dark pine forest
+Otherwise                     → grassland
+```
+
+After the initial classification, the generator refines the map by removing very small lakes, calculating water depth from the distance to land, placing mountain clusters, and scattering trees and rocks.
+
+Agents navigate walkable tiles using the **A\*** pathfinding algorithm. A* evaluates each candidate tile with:
+
+```text
+f(n) = g(n) + h(n)
+```
+
+where `g(n)` is the distance traveled so far and `h(n)` is the Manhattan-distance estimate to the destination:
+
+```text
+h(n) = |xₙ - x_goal| + |yₙ - y_goal|
+```
+
+Each agent evaluates its surroundings and chooses actions such as exploring, fleeing, attacking, drinking, eating, resting, or trading. Unit behavior and statistics are configured in `game.yaml`.
 
 ## Run the project
 
