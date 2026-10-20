@@ -18,7 +18,7 @@ Agents navigate the world using the **A\*** pathfinding algorithm. Each agent ev
 Install the dependencies:
 
 ```bash
-pip install pygame pyyaml noise
+pip install -r requirements.txt
 ```
 
 Then start the simulation:
@@ -42,3 +42,4 @@ python main.py
 - `map_generator.py` — Procedural map generation and terrain management
 - `pathFinding.py` — A\* pathfinding implementation
 - `game.yaml` — Unit and simulation configuration
+- `requirements.txt` — Python dependencies
