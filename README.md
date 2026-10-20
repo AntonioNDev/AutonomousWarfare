@@ -1,6 +1,6 @@
-# HideSeek
+# AutonomousWarfare
 
-HideSeek is a Python/Pygame autonomous-agent simulation set in a procedurally generated world. Multiple teams of units explore the map, manage survival needs, navigate terrain, and respond to nearby enemies through simple decision-making behaviors.
+AutonomousWarfare is a Python/Pygame autonomous-agent simulation set in a procedurally generated world. Multiple teams of units explore the map, manage survival needs, navigate terrain, and respond to nearby enemies through simple decision-making behaviors.
 
 ## How it works
 
