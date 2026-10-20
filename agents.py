@@ -185,7 +185,7 @@ class Agent:
             self.speed = self.base_speed
         
         if self.hunger == 0.0:
-            self.hp = max(0.0, self.hp - NEEDS["starving_dmg"])
+            self.hp = max(0.0, self.hp - NEEDS["starvation_dmg"])
         
         if self.thirst == 0.0:
             self.hp = max(0.0, self.hp - NEEDS["dehydrate_dmg"])
