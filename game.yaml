@@ -1,6 +1,6 @@
 unit_stats:
   archer:
-    hp: 350
+    hp: 355
     attack: 8
     defense: 3
     speed: 0.35
@@ -9,7 +9,7 @@ unit_stats:
     base_vision: 9
     attack_interval: 3000
   axeman:
-    hp: 450
+    hp: 455
     attack: 10
     defense: 5
     speed: 0.30
@@ -18,7 +18,7 @@ unit_stats:
     base_vision: 6
     attack_interval: 2200
   knight:
-    hp: 700
+    hp: 750
     attack: 13
     defense: 10
     speed: 0.25
