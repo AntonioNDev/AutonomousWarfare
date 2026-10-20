@@ -2,6 +2,8 @@
 
 AutonomousWarfare is a Python/Pygame autonomous-agent simulation set in a procedurally generated world. Multiple teams of units explore the map, manage survival needs, navigate terrain, and respond to nearby enemies through simple decision-making behaviors.
 
+![Image Description](gameScreenshots/image.png)
+
 ## How it works
 
 The world is divided into square tiles. Each tile receives two independent Perlin-noise values: elevation and moisture.
