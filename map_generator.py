@@ -189,7 +189,7 @@ class Tile:
       t.walkable = d.get("walkable", True)
       return t
 
-# ── map configurations ──────────────────────────────────────────────────────────────────────
+# CONFIGURATIONS
 # Elevation thresholds
 _WATER_T  = 0.45   # below → water 0.45
 _SAND_T   = 0.48 # water..sand → shore band 0.48
@@ -227,33 +227,32 @@ class Map:
       self.map_data = [[Tile(x, y, tile_size) for y in range(self.rows)]
                         for x in range(self.cols)]
 
-   # -- Clean random water tile noise
    def _prune_small_lakes(self, min_size=6, connectivity=4):
-    """
-    Convert small connected water components (biom == "lake") into land.
-    Call this AFTER initial water assignment in generate_map() and BEFORE
-    _apply_water_depth() / shore-depth processing.
-    """
-    cols = self.cols
-    rows = self.rows
+      """
+      Convert small connected water components (biom == "lake") into land.
+      Call this AFTER initial water assignment in generate_map() and BEFORE
+      _apply_water_depth() / shore-depth processing.
+      """
+      cols = self.cols
+      rows = self.rows
 
-    visited = [[False] * rows for _ in range(cols)]
+      visited = [[False] * rows for _ in range(cols)]
 
-    if connectivity == 8:
-        neigh = [(-1,-1),(-1,0),(-1,1),(0,-1),(0,1),(1,-1),(1,0),(1,1)]
-    else:
-        neigh = [(-1,0),(1,0),(0,-1),(0,1)]
+      if connectivity == 8:
+         neigh = [(-1,-1),(-1,0),(-1,1),(0,-1),(0,1),(1,-1),(1,0),(1,1)]
+      else:
+         neigh = [(-1,0),(1,0),(0,-1),(0,1)]
 
-    def is_water(x,y):
-        return 0 <= x < cols and 0 <= y < rows and self.map_data[x][y].biom == "lake"
+      def is_water(x,y):
+         return 0 <= x < cols and 0 <= y < rows and self.map_data[x][y].biom == "lake"
 
-    for x in range(cols):
-        for y in range(rows):
+      for x in range(cols):
+         for y in range(rows):
             if visited[x][y]:
-                continue
+               continue
             if not is_water(x,y):
-                visited[x][y] = True
-                continue
+               visited[x][y] = True
+               continue
 
             # BFS collect component
             q = deque()
@@ -262,30 +261,24 @@ class Map:
             visited[x][y] = True
 
             while q:
-                cx, cy = q.popleft()
-                comp.append((cx,cy))
-                for dx, dy in neigh:
-                    nx, ny = cx + dx, cy + dy
-                    if 0 <= nx < cols and 0 <= ny < rows and not visited[nx][ny]:
-                        if is_water(nx, ny):
-                            visited[nx][ny] = True
-                            q.append((nx, ny))
-                        else:
-                            visited[nx][ny] = True  # mark non-water so we skip later
+               cx, cy = q.popleft()
+               comp.append((cx,cy))
+               for dx, dy in neigh:
+                  nx, ny = cx + dx, cy + dy
+                  if 0 <= nx < cols and 0 <= ny < rows and not visited[nx][ny]:
+                     if is_water(nx, ny):
+                        visited[nx][ny] = True
+                        q.append((nx, ny))
+                     else:
+                        visited[nx][ny] = True  # mark non-water so we skip later
 
             # If component too small, convert to land
             if len(comp) < min_size:
-                for cx, cy in comp:
-                    tile = self.map_data[cx][cy]
-                    # Convert to land: use your existing helpers so visuals/biome are consistent
-                    tile.set_grass(self._grass(cx, cy), "grassland")
-                    # If you also track elevation explicitly on tile, optionally bump it:
-                    # try:
-                    #     tile.elevation = max(tile.elevation, _WATER_T + 0.01)
-                    # except AttributeError:
-                    #     pass
-
-   # ── noise ────────────────────────────────────────────────────────────────
+               for cx, cy in comp:
+                  tile = self.map_data[cx][cy]
+                  # Convert to land
+                  tile.set_grass(self._grass(cx, cy), "grassland")
+   # noise
    def _elev(self, x, y):
       # Low-frequency base gives large water bodies; high-frequency detail adds natural edges.
       nx = x / self.cols * 3.5 + self._ex
@@ -297,9 +290,9 @@ class Map:
       ny = y / self.rows * 2.8 + self._my
       return (pnoise2(nx, ny, octaves=4, persistence=0.55, lacunarity=2.0) + 1) / 2
 
-   # ── asset pickers ────────────────────────────────────────────────────────
+   # asset pickers
    def _grass(self, x, y):
-      # Single grass type to avoid visual noise; index 0 always exists due to fallback.
+      # Single grass type to avoid visual noise index 0 always exists due to fallback.
       return self.assets["grass"][0]
 
    def _sand(self, x, y):
@@ -313,9 +306,8 @@ class Map:
    def _rock(self):
       return random.choice(self.assets["rocks"])
 
-   # ── generation ───────────────────────────────────────────────────────────
+   # generation
    def generate_map(self):
-      # Pass 1: assign biomes and base surfaces from noise values.
       for x in range(self.cols):
          for y in range(self.rows):
             tile = self.map_data[x][y]
@@ -323,7 +315,6 @@ class Map:
             mois = self._moist(x, y)
 
             if elev < _WATER_T:
-               # Temporarily mark all water as deep; pass 2 refines depth from shore distance.
                tile.set_water(random.choice(self.assets["water_deep"]), "deep")
 
             elif elev < _SAND_T:
@@ -348,18 +339,13 @@ class Map:
       # Clean the random water tiles noise
       self._prune_small_lakes(min_size=6, connectivity=4)
 
-      # Pass 2: water depth from distance to nearest land tile.
       self._apply_water_depth()
 
-      # Pass 3: place mountains on highland tiles.
       self._place_mountains()
 
-      # Pass 4: scatter small rock clusters on grassland / forest edges.
       self._place_rock_clusters()
 
-   def _apply_water_depth(self):
-      # Pre-compute a shore-distance grid using BFS from all land tiles.
-
+   def _apply_water_depth(self): # BFS algorithm for applying water depth
       dist = [[999] * self.rows for _ in range(self.cols)]
       q = deque()
 
@@ -388,11 +374,8 @@ class Map:
                tile.set_water(random.choice(self.assets["water_coast"]), "coast")
             elif d <= _SHALLOW_D:
                tile.set_water(random.choice(self.assets["water_shallow"]), "shallow")
-            # deep water stays as-is
 
    def _place_mountains(self):
-      # Groups highland tiles into blobs, picks the centroid as the peak,
-      # then rings the peak with mountain_rock tiles.
       visited = set()
 
       for sx in range(self.cols):
@@ -416,7 +399,6 @@ class Map:
                stack += [(cx-1,cy),(cx+1,cy),(cx,cy-1),(cx,cy+1)]
 
             if len(blob) < 4:
-               # Too small for a mountain – turn into normal grassland
                for bx, by in blob:
                   self.map_data[bx][by].set_grass(self._grass(bx, by), "grassland")
                continue
@@ -465,7 +447,7 @@ class Map:
                   t.remove_tree()
                t.place_rock(self._rock())
 
-   # ── draw ─────────────────────────────────────────────────────────────────
+   # drawing
    def draw(self, screen):
       world = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
       for col in self.map_data:
@@ -485,7 +467,7 @@ class Map:
          pygame.draw.line(g, (0,0,0,50), (0,y), (surface.get_width(), y))
       surface.blit(g, (0,0))
 
-   # ── camera ───────────────────────────────────────────────────────────────
+   # camera control
    def zoom_at(self, mouse_pos, direction, vw, vh):
       old = self.zoom_factor
       new = max(self.min_zoom, min(self.max_zoom, old + 0.3 * direction))
@@ -501,7 +483,7 @@ class Map:
       self.camera_offset.x = max(0, min(self.camera_offset.x, self.width  * self.zoom_factor - sw))
       self.camera_offset.y = max(0, min(self.camera_offset.y, self.height * self.zoom_factor - sh))
 
-   # ── tile access ───────────────────────────────────────────────────────────
+   # tile access
    def screen_to_tile(self, mouse_pos):
       mx, my = mouse_pos
       tx = int((mx + self.camera_offset.x) / self.zoom_factor // self.tile_size)
@@ -527,7 +509,6 @@ class Map:
    def tile_to_pixel(self, pos):
       return pos[0] * self.tile_size, pos[1] * self.tile_size
 
-   # ── gameplay mutation API ─────────────────────────────────────────────────
    def cut_tree(self, x, y):
       t = self.get_tile_at(x, y)
       if t and t.obstacle == "tree":
@@ -556,7 +537,7 @@ class Map:
          return True
       return False
 
-   # ── save / load ───────────────────────────────────────────────────────────
+   # save/load
    def save_map(self, path="saved_map.json"):
       data = {
          "seeds": [self._ex, self._ey, self._mx, self._my],
@@ -600,7 +581,7 @@ class Map:
                elif obs == "mountain_rock":
                   t.place_mountain_rock(random.choice(self.assets["mountain_rock"]))
 
-   # ── debug ─────────────────────────────────────────────────────────────────
+   # debugging
    def paint_explored_tiles(self, screen, camera_offset, zoom):
       for x in range(self.cols):
          for y in range(self.rows):

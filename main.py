@@ -24,8 +24,7 @@ TEAM_COLORS = {
 }
 
 
-# ── asset loading ─────────────────────────────────────────────────────────────
-
+# asset loader
 def load_entity_assets(asset_dir="assets"):
     assets = {}
     for f in sorted(Path(asset_dir).iterdir()):
@@ -44,8 +43,7 @@ def load_entity_assets(asset_dir="assets"):
     return assets
 
 
-# ── spawning ─────────────────────────────────────────────────────────────────
-
+# spawning
 def _pick_anchor(game_map, existing, min_sep):
     # Returns a walkable grassland tile at least min_sep tiles from every existing anchor.
     for _ in range(500):
